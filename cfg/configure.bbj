@@ -1,0 +1,76 @@
+use com.basis.api.admin.BBjAdminFactory
+use com.basis.api.admin.BBjAdminBase
+use com.basis.api.admin.BBjAdminDatabase
+use com.basis.api.admin.BBjAdminAppDeploymentApplication
+use com.basis.api.admin.BBjAdminAppDeploymentResource
+use com.basis.api.admin.BBjAdminJRE
+use java.net.InetAddress
+
+
+appname$="dwcjava"
+
+api! = BBjAdminFactory.getBBjAdmin("admin", "admin123")
+
+
+declare BBjAdminBase api!
+
+cplist! = new java.util.ArrayList()
+cplist!.add("(bbj_default)")
+
+libdir$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
+ch=unt
+open (ch)libdir$
+while 1
+    read record (ch,end=*break)lib$
+    if lib$(1,1)="." then continue
+    cplist!.add(libdir$+"/"+lib$)
+wend
+close (ch)
+
+
+api!.setClasspath(appname$,cplist!)
+api!.commit()
+
+config! = api!.getRemoteConfiguration()
+
+REM see https://documentation.basis.com/BASISHelp/WebHelp/javadocs/com/basis/api/admin/BBjAdminAppDeploymentApplication.html
+
+
+rlist! = config!.getResources()
+it! = rlist!.iterator()
+found=0
+while it!.hasNext()
+    resource! = it!.next()
+    if resource!.getString(BBjAdminAppDeploymentResource.SOURCE_FILE_NAME) =  BBjAPI().getFileSystem().resolvePath("DWCJ/assets/logo.png") then
+        found=1
+        break
+    fi
+wend
+
+if !found then
+    resource! = config!.createResource()
+    resource!.setString(BBjAdminAppDeploymentResource.SOURCE_FILE_NAME, BBjAPI().getFileSystem().resolvePath("DWCJ/assets/logo.png"))
+    config!.getResources().add(resource!)
+    config!.commit()
+fi
+
+newApp! = config!.createApplication()
+newApp!.setString(BBjAdminAppDeploymentApplication.NAME, appname$)
+newApp!.setString(BBjAdminAppDeploymentApplication.PROGRAM, BBjAPI().getFileSystem().resolvePath("DWCJ/dwcj.bbj"))
+newApp!.setString(BBjAdminAppDeploymentApplication.CLASSPATH,appname$)
+rem newApp!.setString(BBjAdminAppDeploymentApplication.CONFIG_FILE, "/path/to/config.bbx")
+newApp!.setString(BBjAdminAppDeploymentApplication.WORKING_DIRECTORY, BBjAPI().getFileSystem().resolvePath("DWCJ/"))
+newApp!.setBoolean(BBjAdminAppDeploymentApplication.EXE_ENABLED, 0)
+newApp!.setBoolean(BBjAdminAppDeploymentApplication.BUI_ENABLED, 0)
+newApp!.setBoolean(BBjAdminAppDeploymentApplication.DWC_ENABLED, 1)
+
+newApp!.setString(BBjAdminAppDeploymentApplication.SHORTCUT_ICON_RESOURCE_ID, resource!.getString(BBjAdminAppDeploymentResource.RESOURCE_ID))
+
+newApp!.commit()
+
+BBjAPI().getThinClient().browse("http://localhost:8888/webapp/"+appname$)
+
+print "Classpath and webapp "+appname$+" deployed."
+INPUT "CR to finish",*
+
+bye
