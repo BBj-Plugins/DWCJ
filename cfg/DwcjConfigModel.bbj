@@ -1,0 +1,168 @@
+use com.basis.api.admin.BBjAdminFactory
+use com.basis.api.admin.BBjAdminBase
+use com.basis.api.admin.BBjAdminDatabase
+use com.basis.api.admin.BBjAdminAppDeploymentApplication
+use com.basis.api.admin.BBjAdminAppDeploymentResource
+use com.basis.api.admin.BBjAdminJRE
+
+use java.net.InetAddress
+
+
+use ::admin.bbj::Admin
+use ::admin.bbj::UserCredentials
+
+use java.util.ArrayList
+use java.util.TreeMap
+
+
+class public DwcjConfigModel
+
+
+    field private TreeMap CfgList!
+    field private BBjAdminBase Api!
+
+
+    method public DwcjConfigModel()
+
+        admin! = new Admin()
+
+        userCredentials! = admin!.getUserCredentials()
+        if (userCredentials! <> null()) then
+            #Api! = BBjAdminFactory.getBBjAdmin(userCredentials!.getUser(),userCredentials!.getPassword())
+        endif
+
+        if (#Api! = null()) then
+            a=msgbox( "Could not access application server")
+            release
+        endif
+
+        #buildCfgList()
+
+
+    methodend
+
+    method private void buildCfgList()
+        #CfgList! = new TreeMap()
+        cplist! = #Api!.getClasspathNames()
+        
+        find$ = BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
+        
+        it! = cpList!.iterator()
+        while it!.hasNext()
+            cp$=it!.next()
+            
+            found=0
+            cp! = #Api!.getClasspath(cp$)
+            it2! = cp!.iterator()
+            while it2!.hasNext()
+                tmp$=it2!.next()
+                if pos(find$+"/dwcj-" =tmp$) then
+                    found = 1
+                    break
+                fi
+            wend
+            if found then
+                #CfgList!.put(cp$,cp!)
+            fi
+        wend
+    methodend
+
+    method public TreeMap getCfgList()
+        methodret #CfgList!
+    methodend
+
+    method public void removeCfg(String cfg!)
+        if cfg!.length()>0 then
+            #Api!.setClasspath(cfg!,null())
+            #Api!.commit()
+            #Api!.getRemoteConfiguration().removeApplication(cfg!)
+        fi
+        #buildCfgList()
+    methodend
+
+    
+    method public void writeCfg(String AppName! , ArrayList cpList!, String classname!)
+    
+        if ! cpList!.contains("(bbj_default)")
+            cplist!.add("(bbj_default)")
+        fi
+    
+        libdir$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
+        ch=unt
+        open (ch)libdir$
+        while 1
+            read record (ch,end=*break)lib$
+            if lib$(1,1)="." then continue
+            if ! cpList!.contains(libdir$+"/"+lib$)
+                cplist!.add(libdir$+"/"+lib$)
+            fi
+        wend
+        close (ch)
+        
+        
+        #Api!.setClasspath(AppName!,cplist!)
+        #Api!.commit()
+        
+        config! = #Api!.getRemoteConfiguration()
+        
+        REM see https://documentation.basis.com/BASISHelp/WebHelp/javadocs/com/basis/api/admin/BBjAdminAppDeploymentApplication.html
+        
+        
+        rlist! = config!.getResources()
+        it! = rlist!.iterator()
+        found=0
+        while it!.hasNext()
+            resource! = it!.next()
+            if resource!.getString(BBjAdminAppDeploymentResource.SOURCE_FILE_NAME) =  BBjAPI().getFileSystem().resolvePath("DWCJ/assets/logo.png") then
+                found=1
+                break
+            fi
+        wend
+        
+        if !found then
+            resource! = config!.createResource()
+            resource!.setString(BBjAdminAppDeploymentResource.SOURCE_FILE_NAME, BBjAPI().getFileSystem().resolvePath("DWCJ/assets/logo.png"))
+            config!.getResources().add(resource!)
+            config!.commit()
+        fi
+        
+        declare auto BBjAdminAppDeploymentApplication newApp!
+        newApp! = config!.createApplication()
+        newApp!.setString(BBjAdminAppDeploymentApplication.NAME, AppName!)
+        newApp!.setString(BBjAdminAppDeploymentApplication.PROGRAM, BBjAPI().getFileSystem().resolvePath("DWCJ/dwcj.bbj"))
+        newApp!.setString(BBjAdminAppDeploymentApplication.CLASSPATH,AppName!)
+        rem newApp!.setString(BBjAdminAppDeploymentApplication.CONFIG_FILE, "/path/to/config.bbx")
+        newApp!.setString(BBjAdminAppDeploymentApplication.WORKING_DIRECTORY, BBjAPI().getFileSystem().resolvePath("DWCJ/"))
+        newApp!.setBoolean(BBjAdminAppDeploymentApplication.EXE_ENABLED, 0)
+        newApp!.setBoolean(BBjAdminAppDeploymentApplication.BUI_ENABLED, 0)
+        newApp!.setBoolean(BBjAdminAppDeploymentApplication.DWC_ENABLED, 1)
+        if classname!.length()>0 then
+            newApp!.getArguments().add(classname!)
+        fi
+        
+        newApp!.setString(BBjAdminAppDeploymentApplication.SHORTCUT_ICON_RESOURCE_ID, resource!.getString(BBjAdminAppDeploymentResource.RESOURCE_ID))
+        
+        newApp!.commit()
+        
+        #buildCfgList()
+    
+    methodend
+    
+    method public String getClassname(String cfg!)
+        apps! = #Api!.getRemoteConfiguration().getApplications()
+        it! = apps!.iterator()
+        while it!.hasNext()
+            app! = it!.next()
+            if app!.getString(BBjAdminAppDeploymentApplication.NAME)=cfg! then
+                if app!.getArguments().size()>0 then
+                      methodret STR(app!.getArguments().get(0))
+                else
+                    methodret ""
+                fi
+            fi
+        wend
+        methodret "??"
+    methodend
+    
+
+classend
