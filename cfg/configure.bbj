@@ -62,6 +62,8 @@ class public configure extends BBDialog
     field public BBjTopLevelWindow Wnd!
 
     field private DwcjConfigModel model! = new DwcjConfigModel()
+    
+    field private String last_selected_model! = "?"
 
     rem /**
     rem * Constructor configure
@@ -869,6 +871,9 @@ class public configure extends BBDialog
 		        methodret
 		   fi
 		   
+		   #last_selected_model!=cfg$
+		   
+		   
 		   cpList! = #C_Window101__LB_CFG_CPENTRIES!.getAllItems()
 		   #model!.writeCfg(cfg$,cpList!,#C_ED_CLASSNAME!.getText())
 		   
@@ -881,14 +886,22 @@ class public configure extends BBDialog
 	       
 	       it! = #model!.getCfgList().keySet().iterator()
 	       v! = new BBjVector()
+	       sel=-1
+	       i=0
 	       while it!.hasNext()
-	            v!.addItem(it!.next())
+	            cfg$=it!.next()
+	            if cfg$=#last_selected_model! then
+	                sel=i
+	            fi
+	            v!.addItem(cfg$)
+	            i=i+1
 	       wend
 	       
 	       #C_Window101__LB_CONFIGS!.insertItems(0,v!)
 	       
+	       
 	       if (v!.size()) then
-	            #C_Window101__LB_CONFIGS!.selectIndex(0)
+                #C_Window101__LB_CONFIGS!.selectIndex(max(0,sel))
 	            #updateConfigArea()
 	       else
 	            #C_Window101__ED_CFG_NAME!.setText("")
@@ -938,10 +951,12 @@ class public configure extends BBDialog
 
 	method public void updateConfigArea()
         cfg$ = #C_Window101__LB_CONFIGS!.getSelectedItem()
+        
         #C_Window101__ED_CFG_NAME!.setText(cfg$)
         #C_Window101__ED_CFG_NAME!.setEnabled(0)
         #C_Window101__LB_CFG_CPENTRIES!.removeAllItems()
         if cfg$>"" then
+            #last_selected_model! = cfg$
             v! = new BBjVector()
             cp! = #model!.getCfgList().get(cfg$)
             it! = cp!.iterator()

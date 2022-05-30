@@ -109,7 +109,6 @@ class public DwcjConfigModel
             fi
         wend
         close (ch)
-        a=msgbox(str(cplist!))
         
         #Api!.setClasspath(AppName!,cplist!)
         #Api!.commit()
