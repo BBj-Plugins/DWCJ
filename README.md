@@ -9,6 +9,7 @@ implementations of the [org.dwcj.App](https://dwcjava.github.io/engine/org/dwcj/
 Install the Plug-in with the plugin manager. Then run the "configure.bbj" program by pushing the "configure" button in PluginManager.
 (You find the configure.bbj in the plugins/DWCJ/cfg/ subdirectory if you need it outside the plugin manager.)
 
+![image](https://user-images.githubusercontent.com/4833070/170939240-d225b18a-54c6-4312-9802-ce920ff4a02b.png)
 
 ### Create a Deployment Configuration
 
@@ -26,6 +27,8 @@ By default you will reach the deployed app under http://localhost:8888/webapp/<m
 
 You will see a screen like this:
 
+![image](https://user-images.githubusercontent.com/4833070/170939324-8724e98e-21dc-4d0b-b17d-4d96fa470d57.png)
+  
 ### Add your own App implementation
 
 3. Now you can add a jar or class folder to the classpath list on the right. If the .jar contains one or more
