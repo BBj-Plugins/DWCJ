@@ -41,16 +41,6 @@ BEGIN
         NOT WORDWRAP
     END
 
-    EDIT 107, "", 364, 67, 319, 25
-    BEGIN
-        DISABLED
-        MAXLENGTH 32767
-        NAME "ED_CFG_NAME"
-        PLACEHOLDER "<<deployment name>>"
-        SPELLCHECKED
-        NOT DRAGENABLED
-    END
-
     STATICTEXT 108, "DWCJ Projects:", 260, 101, 81, 25
     BEGIN
         NAME "LBL_DWCJ_PROJECTS"
@@ -107,6 +97,16 @@ BEGIN
     BUTTON 117, "New Project", 364, 300, 124, 25
     BEGIN
         NAME "BTN_CFG_ADDPROJECT"
+    END
+
+    INPUTE 107, "", 364, 67, 322, 25
+    BEGIN
+        MASK "zzzzzzzzzzzzzzzzzzzzzzzzz"
+        NAME "ED_CFG_NAME"
+        PADCHARACTER 32
+        PLACEHOLDER "new configuration name"
+        SPELLCHECKED
+        NOT DRAGENABLED
     END
 
 END

@@ -46,7 +46,7 @@ class public configure extends BBDialog
 	field protected BBjButton C_Window101__BTN_CONFIGS_DEL!
 	field protected BBjStaticText C_Window101__LBL_EDIT!
 	field protected BBjStaticText C_Window101__LBL_NAME!
-	field protected BBjEditBox C_Window101__ED_CFG_NAME!
+	field protected BBjInputE C_Window101__ED_CFG_NAME!
 	field protected BBjStaticText C_Window101__LBL_DWCJ_PROJECTS!
 	field protected BBjListBox C_Window101__LB_CFG_CPENTRIES!
 	field protected BBjButton C_Window101__BTN_CFG_ADDJAR!
@@ -294,7 +294,7 @@ class public configure extends BBDialog
 	#C_Window101__BTN_CONFIGS_DEL! = cast(BBjButton,#super!.getControlByName("BTN_CONFIGS_DEL"))
 	#C_Window101__LBL_EDIT! = cast(BBjStaticText,#super!.getControlByName("LBL_EDIT"))
 	#C_Window101__LBL_NAME! = cast(BBjStaticText,#super!.getControlByName("LBL_NAME"))
-	#C_Window101__ED_CFG_NAME! = cast(BBjEditBox,#super!.getControlByName("ED_CFG_NAME"))
+	#C_Window101__ED_CFG_NAME! = cast(BBjInputE,#super!.getControlByName("ED_CFG_NAME"))
 	#C_Window101__LBL_DWCJ_PROJECTS! = cast(BBjStaticText,#super!.getControlByName("LBL_DWCJ_PROJECTS"))
 	#C_Window101__LB_CFG_CPENTRIES! = cast(BBjListBox,#super!.getControlByName("LB_CFG_CPENTRIES"))
 	#C_Window101__BTN_CFG_ADDJAR! = cast(BBjButton,#super!.getControlByName("BTN_CFG_ADDJAR"))
@@ -868,7 +868,7 @@ class public configure extends BBDialog
 	rem  * @param BBjButtonPushEvent
 	rem  */
 	method public void BTN_SAVE__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-		   cfg$=#C_Window101__ED_CFG_NAME!.getText()
+		   cfg$=cvs(#C_Window101__ED_CFG_NAME!.getText(),139)
 		   if cfg$="" or cfg$(1,1)="(" then 
 		        a=msgbox("Invalid Deployment Name!",0,"Error")
 		        methodret
