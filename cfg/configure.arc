@@ -64,7 +64,7 @@ BEGIN
         NOT DRAGENABLED
     END
 
-    BUTTON 110, "Add JAR", 479, 300, 124, 25
+    BUTTON 110, "Add JAR", 484, 300, 124, 25
     BEGIN
         NAME "BTN_CFG_ADDJAR"
     END
@@ -100,6 +100,67 @@ BEGIN
         MAXLENGTH 32767
         NAME "ED_CLASSNAME"
         PLACEHOLDER "the fully qualified Class name extending org.dwcj.App"
+        SPELLCHECKED
+        NOT DRAGENABLED
+    END
+
+    BUTTON 117, "New Project", 364, 300, 124, 25
+    BEGIN
+        NAME "BTN_CFG_ADDPROJECT"
+    END
+
+END
+
+WINDOW 100 "Create new DWCJava Project..." 50 50 899 436
+BEGIN
+    ENTERASTAB
+    EVENTMASK 0
+    ICON ""
+    KEYBOARDNAVIGATION
+    NAME "Window100"
+    STATICTEXT 101, "Project Template:", 22, 22, 129, 25
+    BEGIN
+        NAME "LBL_PROJECT_TEMPLATE"
+        NOT WORDWRAP
+    END
+
+    LISTBOX 102, "", 22, 53, 195, 261
+    BEGIN
+        MULTISELECT
+        NAME "LB_PROJECT_TEMPLATES"
+        NOT DRAGENABLED
+    END
+
+    BUTTON 103, "Visit Template Home", 75, 396, 145, 25
+    BEGIN
+        NAME "BTN_TEMPLATE_HOME"
+    END
+
+    STATICTEXT 104, "Project directory:", 293, 22, 129, 25
+    BEGIN
+        NAME "LBL_PROJECT_DIRECTORY"
+        NOT WORDWRAP
+    END
+
+    FILECHOOSER 105, "/Users/beff", 294, 63, 608, 372
+    BEGIN
+        NAME "DIR_SELECTOR"
+        NOT OPAQUE
+        DIRECTORY "/Users/beff"
+        NOT ACCEPTALL
+        FILESELMODE 1
+        APPROVETEXT "Select"
+        FILTER "Java Projects" "*.*"
+        INITIALFILTER "Java Projects"
+    END
+
+    CUSTOMEDIT 106, "\n", 22, 326, 195, 60
+    BEGIN
+        LIMIT 32767
+        MAXLENGTH 32767
+        NAME "CED_DESC"
+        NOT OPAQUE
+        READONLY
         SPELLCHECKED
         NOT DRAGENABLED
     END

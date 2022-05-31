@@ -6,11 +6,43 @@ rem use ::translations/bbtranslator.bbj::BBTranslator
 rem /** DLGWIZ_OPTION_END("translator") **/
 use ::bbwindowutils.bbj::BBWindowUtils
 
+use java.io.File
+use java.io.FileWriter
+use java.io.FileReader
+
+use java.nio.file.Files
+
+use java.util.Arrays
+use java.util.Iterator
 use java.util.ArrayList
 
-use ::DWCJ/cfg/DwcjConfigModel.bbj::DwcjConfigModel
+use java.lang.reflect.Array
+use java.nio.file.StandardCopyOption
 
-class public configure extends BBDialog
+use java.text.SimpleDateFormat
+
+use java.util.List
+use java.lang.StringBuilder
+
+use java.util.zip.ZipInputStream
+use java.util.zip.ZipEntry
+
+use java.net.URL
+use java.net.URLConnection
+use java.net.HttpURLConnection
+
+use java.io.InputStream
+use java.io.OutputStream
+use java.io.BufferedReader
+use java.io.FileInputStream
+use java.io.FileOutputStream
+use java.io.InputStreamReader
+use java.io.BufferedInputStream
+use java.io.BufferedOutputStream
+use java.io.ByteArrayInputStream
+use java.io.ByteArrayOutputStream
+
+class public CreateProjectDlg extends BBDialog
 
     field protected BBjAPI        API! = BBjAPI()
     field protected BBjNumber     TRUE = #API!.TRUE
@@ -19,11 +51,11 @@ class public configure extends BBDialog
     field protected BBjThinClient ThinClient! = #API!.getThinClient()
     field protected BBjString     ClientLocale$ = #ThinClient!.getClientLocale()
     field protected BBjString     PgmDirectory$ = pgm(-2)(1,max(pos("\"=pgm(-2),-1),pos("/"=pgm(-2),-1)))
-    
+
     rem /** DLGWIZ_OPTION_BEGIN("translator") **/
     rem field protected BBTranslator  Translator! = BBTranslator.getInstance("Message",#ClientLocale$,"en",#PgmDirectory$)
     rem /** DLGWIZ_OPTION_END("translator") **/
-    
+
     field protected BBjNamespace  GroupNS! = #API!.getGroupNamespace()
     field protected BBjMDI        MDI!
 
@@ -32,45 +64,35 @@ class public configure extends BBDialog
     field public BBjNumber traceChan
     field public BBjString traceFile$
 
-	rem /** DLGWIZ_RES configure.arc 101 **/
+	rem /** DLGWIZ_RES configure.arc 100 **/
 
 	rem /** DLGWIZ_FLD_BEGIN **/
 	rem /** DLGWIZ_FLD_END **/
 
 
 	rem /** DLGWIZ_FLC_BEGIN **/
-	field protected BBjTopLevelWindow C_Window101!
-	field protected BBjStaticText C_Window101__LBL_CONFIGS!
-	field protected BBjListBox C_Window101__LB_CONFIGS!
-	field protected BBjButton C_Window101__BTN_CONFIGS_ADD!
-	field protected BBjButton C_Window101__BTN_CONFIGS_DEL!
-	field protected BBjStaticText C_Window101__LBL_EDIT!
-	field protected BBjStaticText C_Window101__LBL_NAME!
-	field protected BBjEditBox C_Window101__ED_CFG_NAME!
-	field protected BBjStaticText C_Window101__LBL_DWCJ_PROJECTS!
-	field protected BBjListBox C_Window101__LB_CFG_CPENTRIES!
-	field protected BBjButton C_Window101__BTN_CFG_ADDJAR!
-	field protected BBjButton C_Window101__BTN_CFG_ADDCLASSFOLDER!
-	field protected BBjButton C_Window101__BTN_SAVE!
-	field protected BBjButton C_BTN_CFG_CPENTRY_DEL!
-	field protected BBjButton C_BTN_CFG_LAUNCH!
-	field protected BBjStaticText C_LBL_CLASSNAME!
-	field protected BBjEditBox C_ED_CLASSNAME!
-	field protected BBjButton C_BTN_CFG_ADDPROJECT!
+	field protected BBjTopLevelWindow C_Window100!
+	field protected BBjStaticText C_Window100__LBL_PROJECT_TEMPLATE!
+	field protected BBjListBox C_Window100__LB_PROJECT_TEMPLATES!
+	field protected BBjButton C_Window100__BTN_TEMPLATE_HOME!
+	field protected BBjStaticText C_Window100__LBL_PROJECT_DIRECTORY!
+	field protected BBjFileChooser C_Window100__DIR_SELECTOR!
+	field protected BBjCEdit C_CED_DESC!
 	rem /** DLGWIZ_FLC_END **/
 
 
     field public BBjTopLevelWindow Wnd!
 
-    field private DwcjConfigModel model! = new DwcjConfigModel()
-    
-    field private String last_selected_model! = "?"
+    field private java.util.ArrayList templates!
+
+    rem this variable receives the directory after successfully creating the project
+    field public BBjString ProjectDir$
 
     rem /**
-    rem * Constructor configure
+    rem * Constructor CreateProjectDlg
     rem */
-    method public configure()
-        #super!("configure.arc",101)
+    method public CreateProjectDlg()
+        #super!("configure.arc",100)
 
         rem Check if BBjSysGui object is still valid. If not re-create it.
         #SysGui!.getContext(err=*next); sg_ok=1
@@ -81,7 +103,7 @@ class public configure extends BBDialog
         if stbl("+USER_LOCALE",err=*endif)<>"" then
             #ClientLocale$ = stbl("+USER_LOCALE")
             rem /** DLGWIZ_OPTION_BEGIN("translator") **/
-            rem #Translator! = BBTranslator.getInstance("configure",#ClientLocale$,"en",#PgmDirectory$)
+            rem #Translator! = BBTranslator.getInstance("createproject",#ClientLocale$,"en",#PgmDirectory$)
             rem /** DLGWIZ_OPTION_END("translator") **/
         endif
 
@@ -106,7 +128,7 @@ class public configure extends BBDialog
 	    rem /** DLGWIZ_OPTION_BEGIN("toolbar[Custom Form]") **/
         rem #super!.addToolBar(1,1,#Wnd!.getWidth(),#Wnd!.getHeight()+32,#Wnd!.getWidth(),31,0,#this!,"")
 	    rem /** DLGWIZ_OPTION_END("toolbar[Custom Form]") **/
-	    
+
 	    rem /** DLGWIZ_OPTION_BEGIN("toolbar[Maintenance Form]") **/
 	    rem #super!.addToolBar(2,1,#Wnd!.getWidth(),#Wnd!.getHeight()+32,#Wnd!.getWidth(),31,0,#this!,stbl("+DIR_IMG")+"im_nav_tool_top.png")
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,3,1,26,26,"","NEW",#Translator!,"New/clear form",1,0,stbl("+DIR_IMG")+"im_tb_new_m.png")
@@ -126,7 +148,7 @@ class public configure extends BBDialog
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,277,1,26,26,"","OPT",#Translator!,"Display additional options",1,0,stbl("+DIR_IMG")+"im_tb_opt_m.png")
         rem #super!.addToolBarCtrl(#SysGui!.IMAGE_CONTROL,303,3,8,23,"","",null(),"",0,0,stbl("+DIR_IMG")+"im_sep_space.png")
         rem /** DLGWIZ_OPTION_END("toolbar[Maintenance Form]") **/
-        
+
         rem /** DLGWIZ_OPTION_BEGIN("toolbar[Maintenance Grid]") **/
         rem #super!.addToolBar(3,1,#Wnd!.getWidth(),#Wnd!.getHeight()+32,#Wnd!.getWidth(),31,0,#this!,stbl("+DIR_IMG")+"im_nav_tool_top.png")
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,3,1,26,26,"","ADE",#Translator!,"Add new",1,0,stbl("+DIR_IMG")+"im_tb_ade_m.png")
@@ -148,7 +170,7 @@ class public configure extends BBDialog
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,329,1,26,26,"","OPT",#Translator!,"Display additional options",1,0,stbl("+DIR_IMG")+"im_tb_opt_m.png")
         rem #super!.addToolBarCtrl(#SysGui!.IMAGE_CONTROL,355,3,8,23,"","",null(),"",0,0,stbl("+DIR_IMG")+"im_sep_space.png")
         rem /** DLGWIZ_OPTION_END("toolbar[Maintenance Grid]") **/
-        
+
         rem /** DLGWIZ_OPTION_BEGIN("toolbar[Header Detail]") **/
         rem #super!.addToolBar(4,1,#Wnd!.getWidth(),#Wnd!.getHeight()+32,#Wnd!.getWidth(),31,0,#this!,stbl("+DIR_IMG")+"im_nav_tool_top.png")
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,3,1,26,26,"","NEW",#Translator!,"New/clear form",1,0,stbl("+DIR_IMG")+"im_tb_new_m.png")
@@ -176,7 +198,7 @@ class public configure extends BBDialog
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,485,1,26,26,"","OPT",#Translator!,"Display additional options",1,0,stbl("+DIR_IMG")+"im_tb_opt_m.png")
         rem #super!.addToolBarCtrl(#SysGui!.IMAGE_CONTROL,511,3,8,23,"","",null(),"",0,0,stbl("+DIR_IMG")+"im_sep_space.png")
         rem /** DLGWIZ_OPTION_END("toolbar[Header Detail]") **/
-        
+
         rem /** DLGWIZ_OPTION_BEGIN("toolbar[Options Entry Form]") **/
         rem #super!.addToolBar(5,1,#Wnd!.getWidth(),#Wnd!.getHeight()+32,#Wnd!.getWidth(),31,0,#this!,stbl("+DIR_IMG")+"im_nav_tool_top.png")
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,3,1,26,26,"","NEW",#Translator!,"New/clear form",1,0,stbl("+DIR_IMG")+"im_tb_new_m.png")
@@ -189,7 +211,7 @@ class public configure extends BBDialog
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,131,1,26,26,"","OPT",#Translator!,"Display additional options",1,0,stbl("+DIR_IMG")+"im_tb_opt_m.png")
         rem #super!.addToolBarCtrl(#SysGui!.IMAGE_CONTROL,157,3,8,23,"","",null(),"",0,0,stbl("+DIR_IMG")+"im_sep_space.png")
         rem /** DLGWIZ_OPTION_END("toolbar[Options Entry Form]") **/
-        
+
         rem /** DLGWIZ_OPTION_BEGIN("toolbar[Options Entry Grid]") **/
         rem #super!.addToolBar(6,1,#Wnd!.getWidth(),#Wnd!.getHeight()+32,#Wnd!.getWidth(),31,0,#this!,stbl("+DIR_IMG")+"im_nav_tool_top.png")
         rem #super!.addToolBarCtrl(#SysGui!.MENUBUTTON_CONTROL,3,1,26,26,"","ADE",#Translator!,"Add new",1,0,stbl("+DIR_IMG")+"im_tb_ade_m.png")
@@ -220,16 +242,11 @@ class public configure extends BBDialog
         #GroupNS!.setCallbackForVariableChange("debug_mode",#this!,"doDebugTrace")
         #GroupNS!.setCallbackForVariableChange("trace_mode",#this!,"doDebugTrace")
 		rem /** DLGWIZ_CBS_BEGIN **/
-		#super!.getControlByName("Window101").setCallback(BBjAPI.ON_CLOSE,#this!,"Window101__ON_CLOSE")
-		#super!.getControlByName("BTN_SAVE").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_SAVE__ON_BUTTON_PUSH")
-		#super!.getControlByName("BTN_CONFIGS_ADD").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CONFIGS_ADD__ON_BUTTON_PUSH")
-		#super!.getControlByName("BTN_CONFIGS_DEL").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CONFIGS_DEL__ON_BUTTON_PUSH")
-		#super!.getControlByName("LB_CONFIGS").setCallback(BBjAPI.ON_LIST_CLICK,#this!,"LB_CONFIGS__ON_LIST_CLICK")
-		#super!.getControlByName("BTN_CFG_ADDCLASSFOLDER").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_ADDCLASSFOLDER__ON_BUTTON_PUSH")
-		#super!.getControlByName("BTN_CFG_ADDJAR").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_ADDJAR__ON_BUTTON_PUSH")
-		#super!.getControlByName("BTN_CFG_CPENTRY_DEL").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_CPENTRY_DEL__ON_BUTTON_PUSH")
-		#super!.getControlByName("BTN_CFG_LAUNCH").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_LAUNCH__ON_BUTTON_PUSH")
-		#super!.getControlByName("BTN_CFG_ADDPROJECT").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_ADDPROJECT__ON_BUTTON_PUSH")
+		#super!.getControlByName("Window100").setCallback(BBjAPI.ON_CLOSE,#this!,"Window100__ON_CLOSE")
+		#super!.getControlByName("DIR_SELECTOR").setCallback(BBjAPI.ON_FILECHOOSER_CANCEL,#this!,"DIR_SELECTOR__ON_FILECHOOSER_CANCEL")
+		#super!.getControlByName("DIR_SELECTOR").setCallback(BBjAPI.ON_FILECHOOSER_APPROVE,#this!,"DIR_SELECTOR__ON_FILECHOOSER_APPROVE")
+		#super!.getControlByName("BTN_TEMPLATE_HOME").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_TEMPLATE_HOME__ON_BUTTON_PUSH")
+		#super!.getControlByName("LB_PROJECT_TEMPLATES").setCallback(BBjAPI.ON_LIST_CLICK,#this!,"LB_PROJECT_TEMPLATES__ON_LIST_CLICK")
 		rem /** DLGWIZ_CBS_END **/
 
     methodend
@@ -287,37 +304,30 @@ class public configure extends BBDialog
     rem */
     method public void onInitDialog()
 	rem /** DLGWIZ_INI_BEGIN **/
-	#C_Window101! = cast(BBjTopLevelWindow,#super!.getControlByName("Window101"))
-	#C_Window101__LBL_CONFIGS! = cast(BBjStaticText,#super!.getControlByName("LBL_CONFIGS"))
-	#C_Window101__LB_CONFIGS! = cast(BBjListBox,#super!.getControlByName("LB_CONFIGS"))
-	#C_Window101__BTN_CONFIGS_ADD! = cast(BBjButton,#super!.getControlByName("BTN_CONFIGS_ADD"))
-	#C_Window101__BTN_CONFIGS_DEL! = cast(BBjButton,#super!.getControlByName("BTN_CONFIGS_DEL"))
-	#C_Window101__LBL_EDIT! = cast(BBjStaticText,#super!.getControlByName("LBL_EDIT"))
-	#C_Window101__LBL_NAME! = cast(BBjStaticText,#super!.getControlByName("LBL_NAME"))
-	#C_Window101__ED_CFG_NAME! = cast(BBjEditBox,#super!.getControlByName("ED_CFG_NAME"))
-	#C_Window101__LBL_DWCJ_PROJECTS! = cast(BBjStaticText,#super!.getControlByName("LBL_DWCJ_PROJECTS"))
-	#C_Window101__LB_CFG_CPENTRIES! = cast(BBjListBox,#super!.getControlByName("LB_CFG_CPENTRIES"))
-	#C_Window101__BTN_CFG_ADDJAR! = cast(BBjButton,#super!.getControlByName("BTN_CFG_ADDJAR"))
-	#C_Window101__BTN_CFG_ADDCLASSFOLDER! = cast(BBjButton,#super!.getControlByName("BTN_CFG_ADDCLASSFOLDER"))
-	#C_Window101__BTN_SAVE! = cast(BBjButton,#super!.getControlByName("BTN_SAVE"))
-	#C_BTN_CFG_CPENTRY_DEL! = cast(BBjButton,#super!.getControlByName("BTN_CFG_CPENTRY_DEL"))
-	#C_BTN_CFG_LAUNCH! = cast(BBjButton,#super!.getControlByName("BTN_CFG_LAUNCH"))
-	#C_LBL_CLASSNAME! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASSNAME"))
-	#C_ED_CLASSNAME! = cast(BBjEditBox,#super!.getControlByName("ED_CLASSNAME"))
-	#C_BTN_CFG_ADDPROJECT! = cast(BBjButton,#super!.getControlByName("BTN_CFG_ADDPROJECT"))
+	#C_Window100! = cast(BBjTopLevelWindow,#super!.getControlByName("Window100"))
+	#C_Window100__LBL_PROJECT_TEMPLATE! = cast(BBjStaticText,#super!.getControlByName("LBL_PROJECT_TEMPLATE"))
+	#C_Window100__LB_PROJECT_TEMPLATES! = cast(BBjListBox,#super!.getControlByName("LB_PROJECT_TEMPLATES"))
+	#C_Window100__BTN_TEMPLATE_HOME! = cast(BBjButton,#super!.getControlByName("BTN_TEMPLATE_HOME"))
+	#C_Window100__LBL_PROJECT_DIRECTORY! = cast(BBjStaticText,#super!.getControlByName("LBL_PROJECT_DIRECTORY"))
+	#C_Window100__DIR_SELECTOR! = cast(BBjFileChooser,#super!.getControlByName("DIR_SELECTOR"))
+	#C_CED_DESC! = cast(BBjCEdit,#super!.getControlByName("CED_DESC"))
 	rem /** DLGWIZ_INI_END **/
 
         rem uncomment the next line to center window
         rem BBWindowUtils.centerWindow(#Wnd!)
         #doDebugTrace(null())
-        
-        
-        #refreshScreen()
-        #C_Window101__BTN_CONFIGS_ADD!.setToolTipText("Click here to create a new DWCJ Deployment Configuration.")
-        #C_Window101__BTN_CONFIGS_ADD!.showToolTipText()
-        
-        #C_Window101__ED_CFG_NAME!.setToolTipText("Enter a name for the DWCJ Deployment Configuration. The name will be used to create a classpath and a DWC App Deployment Configuration.")
-        
+        #templates! = new java.util.ArrayList()
+        ch=unt
+        open(ch)"DWCJ/cfg/projecttemplates.txt"
+        while 1
+            read (ch,end=*break)tpl$
+            if tpl$="" then continue
+            #templates!.add(tpl$)
+            tpl!=new String(tpl$).split(";")
+            print tpl![0]
+            #C_Window100__LB_PROJECT_TEMPLATES!.addItem(tpl![0])
+        wend
+        close (ch)
     methodend
 
     rem /**
@@ -393,7 +403,7 @@ class public configure extends BBDialog
             endif
         endif
     methodend
-    
+
     rem /** DLGWIZ_OPTION_BEGIN("toolbar[Maintenance Form]") **/
     rem rem /**
     rem rem * Method onTBarBtnNEWPush:
@@ -475,7 +485,7 @@ class public configure extends BBDialog
     rem method public void onTBarBtnOPTPush(BBjButtonPushEvent pEvent!)
     rem methodend
     rem /** DLGWIZ_OPTION_END("toolbar[Maintenance Form]") **/
-    
+
     rem /** DLGWIZ_OPTION_BEGIN("toolbar[Maintenance Grid]") **/
     rem rem /**
     rem rem * Method onTBarBtnADEPush:
@@ -573,7 +583,7 @@ class public configure extends BBDialog
     rem method public void onTBarBtnOPTPush(BBjButtonPushEvent pEvent!)
     rem methodend
     rem /** DLGWIZ_OPTION_END("toolbar[Maintenance Grid]") **/
-    
+
     rem /** DLGWIZ_OPTION_BEGIN("toolbar[Header Detail]") **/
     rem rem /**
     rem rem * Method onTBarBtnNEWPush:
@@ -719,7 +729,7 @@ class public configure extends BBDialog
     rem method public void onTBarBtnOPTPush(BBjButtonPushEvent pEvent!)
     rem methodend
     rem /** DLGWIZ_OPTION_END("toolbar[Header Detail]") **/
-    
+
     rem /** DLGWIZ_OPTION_BEGIN("toolbar[Options Entry Form]") **/
 	rem rem /**
     rem rem * Method onTBarBtnNEWPush:
@@ -761,7 +771,7 @@ class public configure extends BBDialog
     rem method public void onTBarBtnOPTPush(BBjButtonPushEvent pEvent!)
     rem methodend
     rem /** DLGWIZ_OPTION_END("toolbar[Options Entry Form]") **/
-    
+
     rem /** DLGWIZ_OPTION_BEGIN("toolbar[Options Entry Grid]") **/
     rem rem /**
     rem rem * Method onTBarBtnADEPush:
@@ -851,209 +861,308 @@ class public configure extends BBDialog
     rem method public void onTBarBtnOPTPush(BBjButtonPushEvent pEvent!)
     rem methodend
     rem /** DLGWIZ_OPTION_END("toolbar[Options Entry Grid]") **/
-    
+
 
 	rem /**
-	rem  * Method Window101__ON_CLOSE: 
-	rem  * Event handler for the ON_CLOSE event for Window101
+	rem  * Method Window100__ON_CLOSE: 
+	rem  * Event handler for the ON_CLOSE event for Window100
 	rem  * @param BBjCloseEvent
 	rem  */
-	method public void Window101__ON_CLOSE(BBjCloseEvent pEvent!)
+	method public void Window100__ON_CLOSE(BBjCloseEvent pEvent!)
 		#postCancelAnswer()
 	methodend
 
 	rem /**
-	rem  * Method BTN_SAVE__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_SAVE
-	rem  * @param BBjButtonPushEvent
+	rem  * Method DIR_SELECTOR__ON_FILECHOOSER_CANCEL: 
+	rem  * Event handler for the ON_FILECHOOSER_CANCEL event for DIR_SELECTOR
+	rem  * @param BBjFileChooserCancelEvent
 	rem  */
-	method public void BTN_SAVE__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-		   cfg$=#C_Window101__ED_CFG_NAME!.getText()
-		   if cfg$="" or cfg$(1,1)="(" then 
-		        a=msgbox("Invalid Deployment Name!",0,"Error")
-		        methodret
-		   fi
-		   
-		   #last_selected_model!=cfg$
-		   
-		   
-		   cpList! = #C_Window101__LB_CFG_CPENTRIES!.getAllItems()
-		   #model!.writeCfg(cfg$,cpList!,#C_ED_CLASSNAME!.getText())
-		   
-		   #refreshScreen()
+	method public void DIR_SELECTOR__ON_FILECHOOSER_CANCEL(BBjFileChooserCancelEvent pEvent!)
+		#postCancelAnswer()
+	methodend
+
+	rem /**
+	rem  * Method DIR_SELECTOR__ON_FILECHOOSER_APPROVE: 
+	rem  * Event handler for the ON_FILECHOOSER_APPROVE event for DIR_SELECTOR
+	rem  * @param BBjFileChooserApproveEvent
+	rem  */
+	method public void DIR_SELECTOR__ON_FILECHOOSER_APPROVE(BBjFileChooserApproveEvent pEvent!)
+
+	    sel = #C_Window100__LB_PROJECT_TEMPLATES!.getSelectedIndex()
+	    if sel>-1 then
+           tpl! = CAST(String,#templates!.get(sel)).split(";")
+	    else
+	        a=msgbox("Please select a project template on the left!",0,"Error")
+	        methodret
+	    fi
+
+	    d! = pEvent!.getSelectedFiles().get(0)
+		if #checkDirectory(d!) then
+		    #createProject(d!,tpl![1])
+		    a=msgbox("Created project template in "+d!)
+		    
+		    #adjustPom(d!)
+		    
+		    #ProjectDir$ = str(d!)
+		    #postReturnAnswer()
+		fi
 	methodend
 	
-	method private void refreshScreen()
-	       #C_Window101__LB_CONFIGS!.removeAllItems()
-	       
-	       
-	       it! = #model!.getCfgList().keySet().iterator()
-	       v! = new BBjVector()
-	       sel=-1
-	       i=0
-	       while it!.hasNext()
-	            cfg$=it!.next()
-	            if cfg$=#last_selected_model! then
-	                sel=i
-	            fi
-	            v!.addItem(cfg$)
-	            i=i+1
-	       wend
-	       
-	       #C_Window101__LB_CONFIGS!.insertItems(0,v!)
-	       
-	       
-	       if (v!.size()) then
-                #C_Window101__LB_CONFIGS!.selectIndex(max(0,sel))
-	            #updateConfigArea()
-	       else
-	            #C_Window101__ED_CFG_NAME!.setText("")
-	            #C_Window101__LB_CFG_CPENTRIES!.removeAllItems()
-	       fi
-	       
-	       #C_Window101__ED_CFG_NAME!.setEnabled(0)
-	       
-	methodend
-
-	rem /**
-	rem  * Method BTN_CONFIGS_ADD__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CONFIGS_ADD
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CONFIGS_ADD__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-	    #C_Window101__ED_CFG_NAME!.setEnabled(1)
-		#C_Window101__ED_CFG_NAME!.setText("")
-		#C_Window101__ED_CFG_NAME!.focus()
-		#C_Window101__ED_CFG_NAME!.showToolTipText()
-		#C_Window101__LB_CONFIGS!.deselectAll()
-		#C_Window101__LB_CFG_CPENTRIES!.removeAllItems()
-		#C_ED_CLASSNAME!.setText("")
-	methodend
-
-	rem /**
-	rem  * Method BTN_CONFIGS_DEL__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CONFIGS_DEL
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CONFIGS_DEL__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-	        cfg$ = #C_Window101__LB_CONFIGS!.getSelectedItem()
-	        if cfg$>"" then
-	            #model!.removeCfg(cfg$)
+	method private String getLib()
+	    ch=unt
+	    open (ch)"DWCJ/lib"
+	    while 1
+	        read record (ch,end=*break)f$
+	        if len(f$)>5 and f$(1,5)="dwcj-" then
+	            lib$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/"+f$)
+	            break
 	        fi
-	        #refreshScreen()
+	    wend
+	    methodret lib$
+	methodend
+	
+	method private void adjustPom(String d!)
+	    
+	        lib$=#getLib()
+	        if lib$="" then
+	            a=msgbox("You need to manually adjust your pom.xml",0,"Could not find lib")
+	            methodret
+	        fi
+	        
+	        ch=unt
+	        open (ch)d!+"/pom.xml"
+	        read record (ch,siz=dec(fin(ch)(1,4)))pom$
+	        close (ch)
+	        
+	        p = pos("<!-- adjust this line or create dwcj-lib" = pom$)
+	        if p>0 then
+	            lib$ = #getLib()
+	            x$="<!-- dwc-lib set by project seed tool -->"+$0a$+"<dwcj-lib>"+lib$+"</dwcj-lib>"+$0a$
+	            pom$=pom$(1,p-1)+x$+pom$(p)
+	        fi
+	
+	methodend
+
+	method private Boolean checkDirectory(String d!)
+
+	        declare File dir!
+	        dir! = new File(d!)
+	        if dir!.exists() then
+	            if dir!.isDirectory() then
+	                rem check if directory is empty
+	                ch=unt
+	                open (ch)d!
+	                empty=1
+	                while 1
+	                    read record (ch,end=*break)tmp$
+	                    if tmp$="." or tmp$=".." then continue
+	                    empty=0
+	                    break
+	                wend
+	                if empty then
+	                    methodret Boolean.TRUE
+	                else
+	                    a=msgbox("Directory must be empty!",0,"Error")
+	                    methodret Boolean.FALSE
+	                fi
+
+	            else
+	                a=msgbox(d!+" is not a directory",0,"Error")
+	                methodret Boolean.FALSE
+	            fi
+	        else
+	            a=msgbox("Directory "+d!+" does not exist, Create?",4,"Directory does not exist")
+	            if a=6 then
+	                dir!.mkdirs()
+	                methodret #checkDirectory(dir!.getAbsolutePath())
+
+	            fi
+	        fi
+	        methodret Boolean.FALSE
+
+	methodend
+
+	method public Boolean createProject(String path!, String urlstring!)
+
+	    url! = new URL(urlstring! + "/archive/main.zip")
+
+        declare File zipFile!
+        zipFile! = File.createTempFile("ProjectTemplate",".zip")
+        zipFile!.deleteOnExit()
+
+        use ::PluginManagerLauncher.bbj::DownloadHelper
+        use ::PluginManagerLauncher.bbj::ProxyService
+
+        declare DownloadHelper downloadHelper!
+        downloadHelper! = new DownloadHelper()
+
+        downloadHelper!.setDownloadURL(url!)
+        downloadHelper!.setOutputFile(zipFile!)
+
+        if !downloadHelper!.isSiteReachable(Boolean.FALSE) then
+            downloadHelper!.setProxy(ProxyService.getProxyFromUserProperties())
+            downloadHelper!.setProxyCredentials(ProxyService.getProxyCredentialsFromUserProperties())
+
+            if downloadHelper!.isSiteReachable(Boolean.TRUE) then
+                downloadHelper!.downloadFile(Boolean.TRUE)
+            else
+                if #inTerminalEnvironment() then
+                    print "Failed to establish the connection to the github repository"
+                    print "Terminating"
+                    release
+                endif
+
+                declare HttpHost proxy!
+                declare ProxyConfigurationWindow window!
+                declare UsernamePasswordCredentials proxyCredentials!
+
+                cancelProxySettings! = Boolean.FALSE
+                while !downloadHelper!.isSiteReachable(Boolean.TRUE) AND !cancelProxySettings!
+                    window! = #promptForProxySettings(proxy!)
+
+                    if window! = null() OR window!.dialogCanceled() then
+                        cancelProxySettings! = Boolean.TRUE
+                        break
+                    endif
+
+                    port = window!.getPort()
+                    hostname! = window!.getHostName()
+
+                    proxy! = new HttpHost(hostname!, port)
+                    downloadHelper!.setProxy(proxy!)
+
+                    if window!.areCredentialsRequired() then
+                        username! = window!.getUsername()
+                        password! = window!.getPassword()
+
+                        downloadHelper!.setProxyCredentials(new UsernamePasswordCredentials(username!, password!))
+                    endif
+                wend
+
+                if downloadHelper!.isSiteReachable(Boolean.TRUE) then
+                    downloadHelper!.downloadFile(Boolean.TRUE)
+                endif
+            endif
+        else
+            downloadHelper!.downloadFile(Boolean.FALSE)
+        endif
+
+        if !downloadHelper!.wasDownloadSuccessful() then
+            zipFile!.delete(err=*next)
+
+            ? 'cs'
+            if downloadHelper!.getDownloadError() = null() then
+                ? "Failed to establish the connection to the github repository"
+            else
+                ? 'cs', str(downloadHelper!.getDownloadError())
+            endif
+
+            methodret Boolean.FALSE
+        endif
+
+        ProxyService.saveProxy(downloadHelper!.getProxy())
+        ProxyService.saveProxyCredentials(downloadHelper!.getProxyCredentials())
+
+        rem unzips the zip file to the given directory
+        #unzipArchive(zipFile!, new File(path!))
+
+        rem deletes the zip file
+        zipFile!.delete()
+
+        methodret Boolean.TRUE
+    methodend
+
+	rem /**
+	rem  * Method BTN_TEMPLATE_HOME__ON_BUTTON_PUSH: 
+	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_TEMPLATE_HOME
+	rem  * @param BBjButtonPushEvent
+	rem  */
+	method public void BTN_TEMPLATE_HOME__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
+        sel = #C_Window100__LB_PROJECT_TEMPLATES!.getSelectedIndex()
+        if sel>-1 then
+            tpl! = CAST(String,#templates!.get(sel)).split(";")
+            url$ = tpl![1]
+            BBjAPI().getThinClient().browse(url$)
+        fi
 	methodend
 
 	rem /**
-	rem  * Method LB_CONFIGS__ON_LIST_CLICK: 
-	rem  * Event handler for the ON_LIST_CLICK event for LB_CONFIGS
+	rem  * Method LB_PROJECT_TEMPLATES__ON_LIST_CLICK: 
+	rem  * Event handler for the ON_LIST_CLICK event for LB_PROJECT_TEMPLATES
 	rem  * @param BBjListClickEvent
 	rem  */
-	method public void LB_CONFIGS__ON_LIST_CLICK(BBjListClickEvent pEvent!)
-	    #updateConfigArea()
+	method public void LB_PROJECT_TEMPLATES__ON_LIST_CLICK(BBjListClickEvent pEvent!)
+		sel = pEvent!.getSelectedIndex()
+		tpl! = CAST(String,#templates!.get(sel)).split(";")
+		#C_CED_DESC!.setText(tpl![2])
 	methodend
 
-	method public void updateConfigArea()
-        cfg$ = #C_Window101__LB_CONFIGS!.getSelectedItem()
-        
-        #C_Window101__ED_CFG_NAME!.setText(cfg$)
-        #C_Window101__ED_CFG_NAME!.setEnabled(0)
-        #C_Window101__LB_CFG_CPENTRIES!.removeAllItems()
-        if cfg$>"" then
-            #last_selected_model! = cfg$
-            v! = new BBjVector()
-            cp! = #model!.getCfgList().get(cfg$)
-            it! = cp!.iterator()
-            while it!.hasNext()
-                cp_entry$ = it!.next()
-                if cp_entry$ <> "(bbj_default)" then
-                    v!.add(cp_entry$)
-                fi
+    rem /**
+    rem  * Unzips the given zip archive into the given output folder.
+    rem  * 
+    rem  * @param zipFile! The zip file handle.
+    rem  * @param outputFolder! The output directory in which the content of the zip file will be extracted.
+    rem  */ 
+    method public void unzipArchive(File zipFile!, File outputFolder!)
+        seterr unzipArchive_ErrorHandler
+
+            rem Hack to create a byte[1024] in BBj
+            declare ByteArrayOutputStream bos!
+            bos! = new ByteArrayOutputStream(1024)
+            for i=0 to 1024-1
+                bos!.write(0)
+            next i
+            bytes! = bos!.toByteArray()
+
+            declare ZipInputStream zipInputStream!
+            zipInputStream! = new ZipInputStream(new FileInputStream(zipFile!))
+
+            declare ZipEntry zipEntry!
+            zipEntry! = zipInputStream!.getNextEntry()
+
+            while(zipEntry! <> null())
+                fileName! = zipEntry!.getName()
+
+                rem removing the github folder name since we are using a custom folder
+                fileName! = fileName!.substring(fileName!.indexOf("/")+1)
+
+                newFile! = new File(outputFolder!.getAbsolutePath() + File.separator + fileName!)
+                print "unzip: " + str(fileName!)
+
+                new File(newFile!.getParent()).mkdirs()
+
+                byteRead = zipInputStream!.read(bytes!)
+
+                rem First checking to avoid creating files instead of folders
+                if(byteRead > 0) then
+                    fos! = new FileOutputStream(newFile!)
+
+                    while(byteRead > 0)
+                        fos!.write(bytes!, 0, byteRead)
+                        byteRead = zipInputStream!.read(bytes!)
+                    wend
+
+                    fos!.close()
+                endif
+
+                zipEntry! = zipInputStream!.getNextEntry()
             wend
-            #C_Window101__LB_CFG_CPENTRIES!.insertItems(0,v!)
-            #C_ED_CLASSNAME!.setText(#model!.getClassname(cfg$))
-        fi
-     methodend
-	rem /**
-	rem  * Method BTN_CFG_ADDCLASSFOLDER__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CFG_ADDCLASSFOLDER
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CFG_ADDCLASSFOLDER__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-		folder$=FILEOPEN("Select Class Folder to Add",BBjAPI().getFileSystem().resolvePath("DWCJ"),"","","",1)
-		if folder$<>"::CANCEL::" then
-		    v! = #C_Window101__LB_CFG_CPENTRIES!.getAllItems()
-		    if !v!.contains(folder$) then
-		        #C_Window101__LB_CFG_CPENTRIES!.addItem(folder$)
-		    fi
-		fi
-	methodend
 
-	rem /**
-	rem  * Method BTN_CFG_ADDJAR__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CFG_ADDJAR
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CFG_ADDJAR__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-	    FILTER$="Jar Files"+$0a$+"*.jar"
-	    FILTER$=FILTER$+$0a$+"All Files (*.*)"+$0a$+"*.*"
-	
-        jar$=FILEOPEN("Select JAR File to Add",BBjAPI().getFileSystem().resolvePath("DWCJ"),"","",FILTER$,0)
-        if jar$<>"::CANCEL::" then
-            v! = #C_Window101__LB_CFG_CPENTRIES!.getAllItems()
-            if !v!.contains(jar$) then
-                #C_Window101__LB_CFG_CPENTRIES!.addItem(jar$)
-            fi
-        fi
-	methodend
+        unzipArchive_ErrorHandler:
+            zipInputStream!.closeEntry(err=*next)
+            zipInputStream!.close(err=*next)
 
-	rem /**
-	rem  * Method BTN_CFG_CPENTRY_DEL__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CFG_CPENTRY_DEL
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CFG_CPENTRY_DEL__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-	    idx!=#C_Window101__LB_CFG_CPENTRIES!.getSelectedIndices()
-	    if idx!.size()>0 then
-    		for i=idx!.size()-1 to 0 step -1 
-    		     #C_Window101__LB_CFG_CPENTRIES!.removeItemAt(idx!.get(i))
-    		next
-    	fi
-	methodend
-
-	rem /**
-	rem  * Method BTN_CFG_LAUNCH__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CFG_LAUNCH
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CFG_LAUNCH__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-		cfg$ = #C_Window101__ED_CFG_NAME!.getText()
-		BBjAPI().getThinClient().browse("http://localhost:8888/webapp/"+cfg$)
-	methodend
-
-	rem /**
-	rem  * Method BTN_CFG_ADDPROJECT__ON_BUTTON_PUSH: 
-	rem  * Event handler for the ON_BUTTON_PUSH event for BTN_CFG_ADDPROJECT
-	rem  * @param BBjButtonPushEvent
-	rem  */
-	method public void BTN_CFG_ADDPROJECT__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
-	    
-		use ::DWCJ/cfg/createproject.bbj::CreateProjectDlg
-		dlg! = new CreateProjectDlg()
-		if dlg!.doModal() then
-		    d$ = dlg!.getProjectDir()+"/target/classes"
-		    #C_Window101__LB_CFG_CPENTRIES!.addItem(d$)
-		    #BTN_SAVE__ON_BUTTON_PUSH(null())
-		fi
-	methodend
+            bos!.close(err=*next)
+    methodend
 
 classend
+
+declare CreateProjectDlg myDialog!
+myDialog! = new CreateProjectDlg()
 
 
 configure_home$=BBjAPI().getFileSystem().resolvePath("DWCJ/cfg/")
 chdir configure_home$
-
-declare configure myDialog!
-myDialog! = new configure()
 
 rem /** DLGWIZ_SET_BEGIN **/
 rem /** DLGWIZ_SET_END **/
@@ -1064,6 +1173,8 @@ if myDialog!.doModal() and info(3,6)<>"5" then
     print "Passed required fields check"
 rem /** DLGWIZ_GET_BEGIN **/
 rem /** DLGWIZ_GET_END **/
+
+    a=msgbox(myDialog!.getProjectDir()+"/target/classes")
 
     input "Press ENTER to release",dummy$
 endif
