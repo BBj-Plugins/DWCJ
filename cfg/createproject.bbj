@@ -918,6 +918,7 @@ class public CreateProjectDlg extends BBDialog
 	            break
 	        fi
 	    wend
+	    close (ch)
 	    methodret lib$
 	methodend
 	
@@ -940,6 +941,11 @@ class public CreateProjectDlg extends BBDialog
 	            x$="<!-- dwc-lib set by project seed tool -->"+$0a$+"<dwcj-lib>"+lib$+"</dwcj-lib>"+$0a$
 	            pom$=pom$(1,p-1)+x$+pom$(p)
 	        fi
+            open (ch,mode="O_CREATE,O_TRUNC")d!+"/pom.xml"
+            write (ch)pom$
+            close (ch)
+	        
+	        
 	
 	methodend
 
@@ -959,6 +965,7 @@ class public CreateProjectDlg extends BBDialog
 	                    empty=0
 	                    break
 	                wend
+	                close (ch)
 	                if empty then
 	                    methodret Boolean.TRUE
 	                else
