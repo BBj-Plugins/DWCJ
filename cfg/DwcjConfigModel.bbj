@@ -56,7 +56,7 @@ class public DwcjConfigModel
             it2! = cp!.iterator()
             while it2!.hasNext()
                 tmp$=it2!.next()
-                if pos(find$+"/dwcj-" =tmp$) or pos("lib/dwcj-"=tmp$)>0 then
+                if pos(find$+"/dwcj-" =tmp$) or pos("lib/dwcj-"=tmp$)>0 or pos(find$+"/*"=tmp$)>0 then
                     found = 1
                     break
                 fi
@@ -104,8 +104,8 @@ class public DwcjConfigModel
             read record (ch,end=*break)lib$
             if lib$(1,1)="." then continue
             if contains_engine AND len(lib$)>8 and lib$(1,5)="dwcj-" then continue 
-            if ! cpList!.contains(libdir$+"/"+lib$)
-                cplist!.add(libdir$+"/"+lib$)
+            if ! cpList!.contains(libdir$+"/*")
+                cplist!.add(libdir$+"/*")
             fi
         wend
         close (ch)
