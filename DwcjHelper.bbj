@@ -1,13 +1,13 @@
-use org.dwcj.events.IEventProxy
+use org.dwcj.interfaces.EventProxy
 use org.dwcj.bridge.IDwcjBBjBridge
 use java.util.ArrayList
 
-class public EventProxy implements IEventProxy
+class public BBjEventProxy implements EventProxy
 
     field private Object obj!
     field private String method!
 
-    method public EventProxy(Object obj!, String method!)
+    method public BBjEventProxy(Object obj!, String method!)
         #obj! = obj!
         #method! = method!
     methodend
@@ -44,7 +44,7 @@ classend
 class public DwcjHelper implements IDwcjBBjBridge
 
     method public CustomObject getEventProxy(Object obj!, String method!)
-        methodret new EventProxy(obj!, method!)
+        methodret new BBjEventProxy(obj!, method!)
     methodend
     
     method public CustomObject getEventProxy(Object obj!, String method!, String eventClass!)
@@ -71,10 +71,12 @@ class public DwcjHelper implements IDwcjBBjBridge
 
     method public java.lang.Object invokeMethod(java.lang.Object e!, java.lang.String method!, java.util.ArrayList args!)
         cmd! = "e!."+method!+"("
-        for i=0 to args!.size()-1
-            cmd! = cmd! + "args!.get("+str(i)+"),"
-        next
-        cmd! = cmd!.substring(0,cmd!.length()-1)
+        if args!<>null() AND args!.size()>0 then
+          for i=0 to args!.size()-1
+              cmd! = cmd! + "args!.get("+str(i)+"),"
+          next
+          cmd! = cmd!.substring(0,cmd!.length()-1)
+        fi
         cmd! = cmd! + ")"
         result!=eval(cmd!)
         methodret result!
