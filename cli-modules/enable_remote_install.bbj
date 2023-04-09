@@ -2,7 +2,7 @@ use com.basis.api.admin.BBjAdminFactory
 use java.util.ArrayList
 use java.io.File
 
-call "DWCJ/cli/modules/get_admin.bbj"
+call "DWCJ/cli-modules/get_admin.bbj"
 
 
 print "enabling remote install..."

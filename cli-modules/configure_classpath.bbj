@@ -1,7 +1,7 @@
 use com.basis.api.admin.BBjAdminFactory
 use java.util.ArrayList
 
-call "DWCJ/cli/modules/get_admin.bbj"
+call "DWCJ/cli-modules/get_admin.bbj"
 
 print "configuring _dwcj_cli classpath..."
 

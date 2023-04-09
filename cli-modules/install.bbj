@@ -1,4 +1,4 @@
-call "DWCJ/cli/modules/get_admin.bbj"
+call "DWCJ/cli-modules/get_admin.bbj"
 
 if argc>1 then
 
