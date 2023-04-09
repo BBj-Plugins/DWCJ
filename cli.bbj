@@ -9,6 +9,7 @@ rem test for properly configured classpath
 cp_test! = api!.getClasspath("_dwcj_cli",err=*next)
 if cp_test! = null() then
     call "DWCJ/cli-modules/configure_classpath.bbj"
+    done=1
 endif
 
 if argc>1 then
@@ -16,6 +17,7 @@ if argc>1 then
       switch argv(i)
           case "configure_classpath"
               call "DWCJ/cli-modules/configure_classpath.bbj"
+              done=1
               break
           case "enable_remote_install"
           case "install"
@@ -26,12 +28,16 @@ if argc>1 then
               for j=1 to argc-1
                   cmdline$=cmdline$+" "+argv(j)
               next
-              print cmdline$
               a=scall(cmdline$)
+              done=1
           break
   
       swend
   next
+fi
+
+if done=0 then
+    print "DWCJ cli interface - nothing to do..."
 fi
 
 release
