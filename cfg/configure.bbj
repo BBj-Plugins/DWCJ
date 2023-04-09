@@ -955,7 +955,7 @@ class public configure extends BBDialog
 	method public void updateConfigArea()
         cfg$ = #C_Window101__LB_CONFIGS!.getSelectedItem()
         
-        #C_Window101__ED_CFG_NAME!.setText(cfg$)
+        #C_Window101__ED_CFG_NAME!.setText(cfg$(6))
         #C_Window101__ED_CFG_NAME!.setEnabled(0)
         #C_Window101__LB_CFG_CPENTRIES!.removeAllItems()
         if cfg$>"" then

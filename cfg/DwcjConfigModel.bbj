@@ -45,23 +45,13 @@ class public DwcjConfigModel
         #CfgList! = new TreeMap()
         cplist! = #Api!.getClasspathNames()
         
-        find$ = BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
+        
         
         it! = cpList!.iterator()
         while it!.hasNext()
             cp$=it!.next()
-            
-            found=0
             cp! = #Api!.getClasspath(cp$)
-            it2! = cp!.iterator()
-            while it2!.hasNext()
-                tmp$=it2!.next()
-                if pos(find$+"/dwcj-" =tmp$) or pos("lib/dwcj-"=tmp$)>0 or pos(find$+"/*"=tmp$)>0 then
-                    found = 1
-                    break
-                fi
-            wend
-            if found then
+            if len(cp$)>5 and cp$(1,5)="dwcj_" then
                 #CfgList!.put(cp$,cp!)
             fi
         wend
@@ -83,33 +73,13 @@ class public DwcjConfigModel
     
     method public void writeCfg(String AppName! , ArrayList cpList!, String classname!)
     
+        a=msgbox("use CLI interface instead!")
+        methodret
+    
         if ! cpList!.contains("(bbj_default)")
             cplist!.add("(bbj_default)")
         fi
-    
-        contains_engine=0
-        it! = cpList!.iterator()
-        while it!.hasNext()
-            cp$=it!.next()
-            if pos("lib/dwcj-"=cp$)>0 then
-                contains_engine=1
-                break
-            fi
-        wend
-    
-        libdir$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
-        ch=unt
-        open (ch)libdir$
-        while 1
-            read record (ch,end=*break)lib$
-            if lib$(1,1)="." then continue
-            if contains_engine AND len(lib$)>8 and lib$(1,5)="dwcj-" then continue 
-            if ! cpList!.contains(libdir$+"/*")
-                cplist!.add(libdir$+"/*")
-            fi
-        wend
-        close (ch)
-        
+     
         #Api!.setClasspath(AppName!,cplist!)
         #Api!.commit()
         
@@ -147,7 +117,7 @@ class public DwcjConfigModel
         newApp!.setBoolean(BBjAdminAppDeploymentApplication.BUI_ENABLED, 0)
         newApp!.setBoolean(BBjAdminAppDeploymentApplication.DWC_ENABLED, 1)
         if classname!.length()>0 then
-            newApp!.getArguments().add(classname!)
+            newApp!.getArguments().add("class="+classname!)
         fi
         
         newApp!.setString(BBjAdminAppDeploymentApplication.SHORTCUT_ICON_RESOURCE_ID, resource!.getString(BBjAdminAppDeploymentResource.RESOURCE_ID))
@@ -159,19 +129,41 @@ class public DwcjConfigModel
     methodend
     
     method public String getClassname(String cfg!)
+        cfg$=cfg!.substring(5)
         apps! = #Api!.getRemoteConfiguration().getApplications()
         it! = apps!.iterator()
         while it!.hasNext()
             app! = it!.next()
-            if app!.getString(BBjAdminAppDeploymentApplication.NAME)=cfg! then
-                if app!.getArguments().size()>0 then
-                      methodret STR(app!.getArguments().get(0))
-                else
-                    methodret ""
+            if app!.getString(BBjAdminAppDeploymentApplication.NAME)=cfg$ then
+                args! = app!.getArguments()
+                it2! = args!.iterator()
+                while it2!.hasNext()
+                   arg$=it2!.next()
+                   if len(arg$)>6 and arg$(1,6)="class=" then
+                      methodret arg$(7)
                 fi
             fi
         wend
-        methodret "??"
+        methodret ""
+    methodend
+
+    method public Boolean getDebug(String cfg!)
+        cfg$=cfg!.substring(5)
+        apps! = #Api!.getRemoteConfiguration().getApplications()
+        it! = apps!.iterator()
+        while it!.hasNext()
+            app! = it!.next()
+            if app!.getString(BBjAdminAppDeploymentApplication.NAME)=cfg$ then
+                args! = app!.getArguments()
+                it2! = args!.iterator()
+                while it2!.hasNext()
+                   arg$=it2!.next()
+                   if arg$="DEBUG" then
+                      methodret true
+                fi
+            fi
+        wend
+        methodret false
     methodend
     
 

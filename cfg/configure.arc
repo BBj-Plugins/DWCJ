@@ -66,6 +66,8 @@ BEGIN
 
     BUTTON 112, "Save", 619, 387, 144, 25
     BEGIN
+        DISABLED
+        INVISIBLE
         NAME "BTN_SAVE"
     END
 
