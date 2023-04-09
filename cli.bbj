@@ -1,0 +1,37 @@
+use com.basis.api.admin.BBjAdminFactory
+use java.util.ArrayList
+
+call "DWCJ/cli/modules/get_admin.bbj"
+
+api! = BBjAdminFactory.getBBjAdmin(user$, password$)
+
+rem test for properly configured classpath
+cp_test! = api!.getClasspath("_dwcj_cli",err=*next)
+if cp_test! = null() then
+    call "DWCJ/cli/configure_classpath.bbj"
+endif
+
+if argc>1 then
+  for i=1 to argc-1
+      switch argv(i)
+          case "configure_classpath"
+              call "DWCJ/cli/configure_classpath.bbj"
+              break
+          case "enable_remote_install"
+          case "install"
+              cmdline$="bbj -tIO -CP_dwcj_cli "
+              cmdline$=cmdline$+"DWCJ/cli/"+argv(i)+".bbj -"
+  
+              rem pass entire command line to the cli module
+              for j=1 to argc-1
+                  cmdline$=cmdline$+" "+argv(j)
+              next
+              print cmdline$
+              a=scall(cmdline$)
+          break
+  
+      swend
+  next
+fi
+
+release

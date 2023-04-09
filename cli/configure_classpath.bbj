@@ -1,0 +1,20 @@
+use com.basis.api.admin.BBjAdminFactory
+use java.util.ArrayList
+
+call "DWCJ/cli/modules/get_admin.bbj"
+
+print "configuring _dwcj_cli classpath..."
+
+api! = BBjAdminFactory.getBBjAdmin(user$, password$)
+
+cpEntries! = new ArrayList()
+cpEntries!.add("(bbj_default)")
+cpEntries!.add(BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")+"/*")
+
+api!.setClasspath("_dwcj_cli", null())
+api!.commit()
+
+api!.setClasspath("_dwcj_cli", cpEntries!)
+api!.commit()
+
+exit

@@ -1,0 +1,49 @@
+use com.basis.api.admin.BBjAdminFactory
+use java.util.ArrayList
+use java.io.File
+
+call "DWCJ/cli/modules/get_admin.bbj"
+
+
+print "enabling remote install..."
+
+api! = BBjAPI().getAdmin(user$, password$)
+servlet$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
+mapping$="/dwcj-install"
+
+serverConfig! = api!.getJettyServerConfig()
+contextConfig! = serverConfig!.getRootContextInfo()
+
+rem check that the mapping is not already used by another program
+if(contextConfig!.getBBxServletMappings().contains(mapping$)) then
+    print "removing old servlet..."
+    contextConfig!.removeBBxServlet(mapping$)
+endif
+
+
+servletPgm! = new File(BBjAPI().getFileSystem().resolvePath("DWCJ/servlets"), "DwcjInstallServlet.bbj")
+
+
+rem ClassName, Mapping, Source, Config(Optional)
+rem http://documentation.basis.com/BASISHelp/WebHelp/gridmethods4/bbjjettycontextconfiguration_addbbjspservlet.htm
+configuration! = contextConfig!.addBBxServlet(mapping$, servletPgm!.getAbsolutePath(), "DwcjInstallServlet", "service")
+configuration!.setClassPath("_dwcj_cli")
+
+configuration!.setConfigFile(configFilePath!)
+
+serverConfig!.saveConfig()
+
+declare auto BBjJettyContextConfiguration contextConfig!
+
+print "Remote deployment enabled:"
+
+port=contextConfig!.getHttpPort()
+if port=-1 then let port=8888
+print "http://localhost"+h$+":"+str(port)+"/dwcj-install"
+
+sslport=contextConfig!.getSSLPort()
+if sslport=-1 then let sslport=8443
+print "https://localhost"+h$+":"+str(sslport)+"/dwcj-install"
+print
+
+release

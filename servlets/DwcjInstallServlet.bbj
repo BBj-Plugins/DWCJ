@@ -1,0 +1,27 @@
+class public DwcjInstallServlet  
+    method public void service(BBxServletContext context!) 
+       
+       
+        request! = context!.getRequest()
+        response! = context!.getResponse()
+        session! = request!.getSession()
+
+        s! = response!.getOutputStream()
+        
+        fu! = context!.getRequest().getFileUploads()
+        if  fu!.size() = 1 then
+            upload! = fu!.get(0)
+            s!.write("dwcj-installer: received "+upload!.getOriginalName()+$0d$)
+
+        
+            bbjHome! = System.getProperty("basis.BBjHome")
+            installer! = new org.dwcj.installer.DwcjInstaller()
+            ret! = installer!.install(upload!.getTempName(),upload!.getOriginalName(),bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/")
+            ERASE upload!.getTempName()
+            s!.write(ret!)
+        else
+            s!.write("error: nothing to do")
+        fi
+
+    methodend
+classend
