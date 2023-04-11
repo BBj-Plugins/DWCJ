@@ -1,3 +1,6 @@
+use java.io.StringWriter
+use java.io.PrintWriter
+
 class public DwcjInstallServlet  
     method public void service(BBxServletContext context!) 
        
@@ -12,11 +15,11 @@ class public DwcjInstallServlet
         fu! = context!.getRequest().getFileUploads()
         if  fu!.size() = 1 then
             upload! = fu!.get(0)
-            s!.write("dwcj-installer: received "+upload!.getOriginalName()+$0d$)
+            s!.write("dwcj-installer: received "+upload!.getOriginalName()+$0d0a$)
         
             bbjHome! = System.getProperty("basis.BBjHome")
             installer! = new org.dwcj.installer.DwcjInstaller()
-            ret! = installer!.install(upload!.getTempName(),upload!.getOriginalName(),bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/")
+            ret! = installer!.install(upload!.getTempName(),upload!.getOriginalName(),bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/",err=installer_error)
             ERASE upload!.getTempName()
             s!.write(ret!)
         else
@@ -26,6 +29,18 @@ class public DwcjInstallServlet
         methodret 
         
         errtrap:
-            context!.getResponse().getOutputStream().write("Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1))      
+            context!.getResponse().getOutputStream().write("Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1)+$0d0a$)      
+            methodret
+            
+        installer_error:
+            context!.getResponse().getOutputStream().write("Error in installer core:"+$0d0a$)      
+            e! = BBjAPI().getLastJavaException()
+            context!.getResponse().getOutputStream().write(e!.getMessage() + $0d0a$)
+            st! = e!.getStackTrace()
+            sw! = new StringWriter()
+            pw! = new PrintWriter(sw!)
+            e!.printStackTrace(pw!)
+            context!.getResponse().getOutputStream().write(sw!.toString())
+            methodret       
     methodend
 classend
