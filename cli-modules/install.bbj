@@ -1,3 +1,5 @@
+seterr errtrap
+
 call "DWCJ/cli-modules/get_admin.bbj"
 
 if argc>1 then
@@ -35,4 +37,8 @@ ret! = installer!.install(jar$,filename$,bbjHome!,BBjAPI().getFileSystem().resol
 
 print ret!
 
+release
+
+errtrap:
+print "Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1)
 release

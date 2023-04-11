@@ -1,3 +1,4 @@
+seterr errtrap
 use com.basis.api.admin.BBjAdminFactory
 use java.util.ArrayList
 
@@ -10,14 +11,17 @@ cp_test! = api!.getClasspath("_dwcj_cli",err=*next)
 if cp_test! = null() then
     call "DWCJ/cli-modules/configure_classpath.bbj"
     done=1
+    cp_autocfg=1
 endif
 
 if argc>1 then
   for i=1 to argc-1
       switch argv(i)
           case "configure_classpath"
-              call "DWCJ/cli-modules/configure_classpath.bbj"
-              done=1
+              if cp_autocfg<1 then
+                call "DWCJ/cli-modules/configure_classpath.bbj"
+                done=1
+              fi
               break
           case "enable_remote_install"
           case "install"
@@ -40,4 +44,8 @@ if done=0 then
     print "DWCJ cli interface - nothing to do..."
 fi
 
+release
+
+errtrap:
+print "Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1)
 release

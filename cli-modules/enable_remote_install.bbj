@@ -1,3 +1,5 @@
+seterr errtrap
+
 use com.basis.api.admin.BBjAdminFactory
 use java.util.ArrayList
 use java.io.File
@@ -33,6 +35,16 @@ configuration!.setConfigFile(configFilePath!)
 
 serverConfig!.saveConfig()
 
+declare auto BBjJettyContextController controller!
+controller! = api!.getJettyServer().getContext("root")
+if(controller!.isStarted()) then
+    print "restarting root context..."
+    controller!.restart()
+else
+    print "starting root context..."
+    controller!.start()
+endif
+
 declare auto BBjJettyContextConfiguration contextConfig!
 
 print "Remote deployment enabled:"
@@ -44,6 +56,10 @@ print "http://localhost"+h$+":"+str(port)+"/dwcj-install"
 sslport=contextConfig!.getSSLPort()
 if sslport=-1 then let sslport=8443
 print "https://localhost"+h$+":"+str(sslport)+"/dwcj-install"
-print
 
+
+release
+
+errtrap:
+print "Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1)
 release

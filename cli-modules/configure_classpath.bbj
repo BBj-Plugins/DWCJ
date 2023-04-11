@@ -1,3 +1,4 @@
+seterr errtrap
 use com.basis.api.admin.BBjAdminFactory
 use java.util.ArrayList
 
@@ -18,3 +19,7 @@ api!.setClasspath("_dwcj_cli", cpEntries!)
 api!.commit()
 
 exit
+
+errtrap:
+print "Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1)
+release

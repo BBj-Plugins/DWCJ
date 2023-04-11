@@ -1,6 +1,7 @@
 class public DwcjInstallServlet  
     method public void service(BBxServletContext context!) 
        
+        seterr errtrap
        
         request! = context!.getRequest()
         response! = context!.getResponse()
@@ -12,7 +13,6 @@ class public DwcjInstallServlet
         if  fu!.size() = 1 then
             upload! = fu!.get(0)
             s!.write("dwcj-installer: received "+upload!.getOriginalName()+$0d$)
-
         
             bbjHome! = System.getProperty("basis.BBjHome")
             installer! = new org.dwcj.installer.DwcjInstaller()
@@ -22,6 +22,10 @@ class public DwcjInstallServlet
         else
             s!.write("error: nothing to do")
         fi
-
+        
+        methodret 
+        
+        errtrap:
+            request!.getSession().getOutputStream().write("Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1))      
     methodend
 classend
