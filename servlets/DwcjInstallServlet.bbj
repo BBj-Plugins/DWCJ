@@ -26,6 +26,6 @@ class public DwcjInstallServlet
         methodret 
         
         errtrap:
-            request!.getSession().getOutputStream().write("Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1))      
+            context!.getResponse().getOutputStream().write("Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1))      
     methodend
 classend
