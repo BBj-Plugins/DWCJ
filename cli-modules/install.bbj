@@ -24,7 +24,7 @@ while pos("\"=filename$)>0
 wend
 
 
-if jar$(1,1)<>"/" AND jar$(1,1)<>"\" then
+if jar$(1,1)<>"/" AND jar$(1,1)<>"\" AND jar$(2,1)<>":" then
     jar$=dir("")+jar$
 fi
 
