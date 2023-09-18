@@ -111,6 +111,12 @@ BEGIN
         NOT DRAGENABLED
     END
 
+    BUTTON 118, "Enable Maven Remote Install", 21, 387, 286, 25
+    BEGIN
+        BACKGROUNDCOLOR RGB(40,205,65)
+        NAME "ENABLEMAVEN"
+    END
+
 END
 
 WINDOW 100 "Create new DWCJava Project..." 50 50 899 436

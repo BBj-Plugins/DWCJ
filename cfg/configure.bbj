@@ -57,6 +57,7 @@ class public configure extends BBDialog
 	field protected BBjStaticText C_LBL_CLASSNAME!
 	field protected BBjEditBox C_ED_CLASSNAME!
 	field protected BBjButton C_BTN_CFG_ADDPROJECT!
+	field protected BBjButton C_ENABLEMAVEN!
 	rem /** DLGWIZ_FLC_END **/
 
 
@@ -230,6 +231,7 @@ class public configure extends BBDialog
 		#super!.getControlByName("BTN_CFG_CPENTRY_DEL").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_CPENTRY_DEL__ON_BUTTON_PUSH")
 		#super!.getControlByName("BTN_CFG_LAUNCH").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_LAUNCH__ON_BUTTON_PUSH")
 		#super!.getControlByName("BTN_CFG_ADDPROJECT").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTN_CFG_ADDPROJECT__ON_BUTTON_PUSH")
+		#super!.getControlByName("ENABLEMAVEN").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"ENABLEMAVEN__ON_BUTTON_PUSH")
 		rem /** DLGWIZ_CBS_END **/
 
     methodend
@@ -305,6 +307,7 @@ class public configure extends BBDialog
 	#C_LBL_CLASSNAME! = cast(BBjStaticText,#super!.getControlByName("LBL_CLASSNAME"))
 	#C_ED_CLASSNAME! = cast(BBjEditBox,#super!.getControlByName("ED_CLASSNAME"))
 	#C_BTN_CFG_ADDPROJECT! = cast(BBjButton,#super!.getControlByName("BTN_CFG_ADDPROJECT"))
+	#C_ENABLEMAVEN! = cast(BBjButton,#super!.getControlByName("ENABLEMAVEN"))
 	rem /** DLGWIZ_INI_END **/
 
         rem uncomment the next line to center window
@@ -1044,6 +1047,18 @@ class public configure extends BBDialog
 		    #C_Window101__LB_CFG_CPENTRIES!.addItem(d$)
 		    #BTN_SAVE__ON_BUTTON_PUSH(null())
 		fi
+	methodend
+
+	rem /**
+	rem  * Method ENABLEMAVEN__ON_BUTTON_PUSH: 
+	rem  * Event handler for the ON_BUTTON_PUSH event for ENABLEMAVEN
+	rem  * @param BBjButtonPushEvent
+	rem  */
+	method public void ENABLEMAVEN__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
+		
+		  cmdline$="bbj -tIO DWCJ/cli.bbj - enable_remote_install "
+          a=scall(cmdline$)
+		
 	methodend
 
 classend
