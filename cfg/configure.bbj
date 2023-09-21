@@ -1056,9 +1056,13 @@ class public configure extends BBDialog
 	rem  */
 	method public void ENABLEMAVEN__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
 		
-		  cmdline$="bbj -tIO DWCJ/cli.bbj - enable_remote_install "
-          a=scall(cmdline$)
-		
+        cmdline$="bbj -tIO DWCJ/cli.bbj - enable_remote_install "
+        a=scall(cmdline$)
+        if a=0 then  
+            a=msgbox("Enabled http://localhost:8888/dwcj-install",0,"You're all set.")
+        else
+            a=msgbox("Something might have gone wrong enabling http://localhost:8888/dwcj-install",0,"Something might have gone wrong.")
+        fi
 	methodend
 
 classend
