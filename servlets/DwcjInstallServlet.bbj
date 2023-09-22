@@ -23,7 +23,7 @@ class public DwcjInstallServlet
             ERASE upload!.getTempName()
             s!.write(ret!)
         else
-            s!.write("error: nothing to do")
+            s!.write("Maven remote deployment is enabled.")
         fi
         
         methodret 
