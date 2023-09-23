@@ -13,17 +13,22 @@ class public DwcjInstallServlet
         s! = response!.getOutputStream()
         
         fu! = context!.getRequest().getFileUploads()
+
+        req$=request!.getRequestURL()                                                                                                                       
+        req$=req$(1,len(request!.getRequestURL())-len(request!.getRequestURI()))     
+
+
         if  fu!.size() = 1 then
             upload! = fu!.get(0)
             s!.write("dwcj-installer: received "+upload!.getOriginalName()+$0d0a$)
         
             bbjHome! = System.getProperty("basis.BBjHome")
             installer! = new org.dwcj.installer.DwcjInstaller()
-            ret! = installer!.install(upload!.getTempName(),upload!.getOriginalName(),bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/",err=installer_error)
+            ret! = installer!.install(upload!.getTempName(),upload!.getOriginalName(),bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/",req$,err=installer_error)
             ERASE upload!.getTempName()
             s!.write(ret!)
         else
-            s!.write("Maven remote deployment is enabled.")
+            s!.write("error: nothing to do")
         fi
         
         methodret 
