@@ -11,7 +11,7 @@ print "enabling remote install..."
 
 api! = BBjAPI().getAdmin(user$, password$)
 servlet$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/")
-mapping$="/dwcj-install"
+mapping$="/webforj-install"
 
 serverConfig! = api!.getJettyServerConfig()
 contextConfig! = serverConfig!.getRootContextInfo()
@@ -51,11 +51,11 @@ print "Remote deployment enabled:"
 
 port=contextConfig!.getHttpPort()
 if port=-1 then let port=8888
-print "http://localhost"+h$+":"+str(port)+"/dwcj-install"
+print "http://localhost"+h$+":"+str(port)+"/webforj-install"
 
 sslport=contextConfig!.getSSLPort()
 if sslport=-1 then let sslport=8443
-print "https://localhost"+h$+":"+str(sslport)+"/dwcj-install"
+print "https://localhost"+h$+":"+str(sslport)+"/webforj-install"
 
 
 release

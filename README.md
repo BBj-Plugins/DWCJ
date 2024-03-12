@@ -32,7 +32,7 @@ This line installs the JAR file that is found in the relative subdirectory where
 ### Enable Remote Installation over HTTP(S)
 
 With this command you can create a servlet entry that allows remote installation over HTTP(S), using the [dwcj-install-maven-plugin](https://github.com/DwcJava/dwcj-install-maven-plugin).
-It will create an endpoint in the root context that is typically accessible under ```http://localhost:8888/dwcj-install```
+It will create an endpoint in the root context that is typically accessible under ```http://localhost:8888/webforj-install```
 ```
 <bbx_bin>bbj -tIO DWCJ/cli.bbj - enable_remote_install   
 ```

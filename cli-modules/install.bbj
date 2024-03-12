@@ -32,7 +32,7 @@ fi
 print "installing "+jar$
 
 bbjHome! = System.getProperty("basis.BBjHome")
-installer! = new org.dwcj.installer.DwcjInstaller()
+installer! = new com.webforj.installer.WebforjInstaller()
 ret! = installer!.install(jar$,filename$,bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/")
 
 print ret!

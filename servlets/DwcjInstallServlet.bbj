@@ -20,10 +20,10 @@ class public DwcjInstallServlet
 
         if  fu!.size() = 1 then
             upload! = fu!.get(0)
-            s!.write("dwcj-installer: received "+upload!.getOriginalName()+$0d0a$)
+            s!.write("webforj-installer: received "+upload!.getOriginalName()+$0d0a$)
         
             bbjHome! = System.getProperty("basis.BBjHome")
-            installer! = new org.dwcj.installer.DwcjInstaller()
+            installer! = new com.webforj.installer.WebforjInstaller()
             ret! = installer!.install(upload!.getTempName(),upload!.getOriginalName(),bbjHome!,BBjAPI().getFileSystem().resolvePath("DWCJ/deployments/")+"/",req$,err=installer_error)
             ERASE upload!.getTempName()
             s!.write(ret!)

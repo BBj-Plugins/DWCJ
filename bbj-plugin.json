@@ -4,7 +4,7 @@
   "version": "0.18.0",
   "author": "Stephan Wald",
   "licence": "MIT",
-  "bbj_dependency": "23.00",
+  "bbj_dependency": "24.00",
   "plugin_dependencies": [],
   "plugin_development_dependencies": []
 }

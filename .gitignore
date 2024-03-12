@@ -5,3 +5,5 @@
 .project
 /.builaunches/
 /.idea/
+/deployments/*
+!/deployments/readme.txt

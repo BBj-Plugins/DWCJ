@@ -109,7 +109,7 @@ class public DwcjConfigModel
         declare auto BBjAdminAppDeploymentApplication newApp!
         newApp! = config!.createApplication()
         newApp!.setString(BBjAdminAppDeploymentApplication.NAME, AppName!)
-        newApp!.setString(BBjAdminAppDeploymentApplication.PROGRAM, BBjAPI().getFileSystem().resolvePath("DWCJ/dwcj.bbj"))
+        newApp!.setString(BBjAdminAppDeploymentApplication.PROGRAM, BBjAPI().getFileSystem().resolvePath("DWCJ/webforj.bbj"))
         newApp!.setString(BBjAdminAppDeploymentApplication.CLASSPATH,AppName!)
         rem newApp!.setString(BBjAdminAppDeploymentApplication.CONFIG_FILE, "/path/to/config.bbx")
         newApp!.setString(BBjAdminAppDeploymentApplication.WORKING_DIRECTORY, BBjAPI().getFileSystem().resolvePath("DWCJ/"))

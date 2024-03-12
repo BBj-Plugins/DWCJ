@@ -913,7 +913,7 @@ class public CreateProjectDlg extends BBDialog
 	    open (ch)"DWCJ/lib"
 	    while 1
 	        read record (ch,end=*break)f$
-	        if len(f$)>5 and f$(1,5)="dwcj-" then
+	        if len(f$)>5 and f$(1,5)="webforj-" then
 	            lib$=BBjAPI().getFileSystem().resolvePath("DWCJ/lib/"+f$)
 	            break
 	        fi
