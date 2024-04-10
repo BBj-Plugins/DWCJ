@@ -18,6 +18,43 @@ api!.commit()
 api!.setClasspath("_dwcj_cli", cpEntries!)
 api!.commit()
 
+print "configuring _webforj_default classpath..."
+
+use java.io.File
+use java.io.FilenameFilter
+use java.util.Arrays
+use java.util.HashSet
+use java.util.Set
+
+class public JarFilenameFilter implements FilenameFilter
+    field private Set FilterList!
+
+    method public JarFilenameFilter(Set excludeList!)
+        #FilterList! = excludeList!
+    methodend
+
+    method public boolean accept(File dir!, String name!)
+        methodret name!.endsWith(".jar") AND !#FilterList!.contains(name!)
+    methodend
+classend
+
+bbjHome! = System.getProperty("basis.BBjHome")
+directory! = new File(BBjAPI().getFileSystem().resolvePath(bbjHome! + "/.lib"))
+excludeList! = new HashSet(Arrays.asList("jakarta.el-3.0.4.jar"))
+filter! = new JarFilenameFilter(excludeList!)
+jarFiles! = directory!.listFiles(filter!)
+
+paths! = new ArrayList()
+FOR i=0 to jarFiles!.length-1
+    paths!.add(jarFiles![i].getAbsolutePath())
+NEXT 
+
+api!.setClasspath("_webforj_default", null())
+api!.commit()
+
+api!.setClasspath("_webforj_default", paths!)
+api!.commit()
+
 exit
 
 errtrap:

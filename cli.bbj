@@ -7,8 +7,9 @@ call "DWCJ/cli-modules/get_admin.bbj"
 api! = BBjAdminFactory.getBBjAdmin(user$, password$)
 
 rem test for properly configured classpath
-cp_test! = api!.getClasspath("_dwcj_cli",err=*next)
-if cp_test! = null() then
+clicp_test! = api!.getClasspath("_dwcj_cli",err=*next)
+webforjcb_test! = api!.getClasspath("_webforj_default",err=*next)
+if clicp_test! = null() or webforjcb_test! = null() then
     call "DWCJ/cli-modules/configure_classpath.bbj"
     done=1
     cp_autocfg=1
