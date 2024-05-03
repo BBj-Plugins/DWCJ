@@ -1,37 +1,40 @@
 seterr errtrap
 
-call "DWCJ/cli-modules/get_admin.bbj"
-
-if argc>1 then
-    for i=1 to argc-1
-        if argv(i)="install" then
-            if i<argc-1 then
-                filename$=argv(i+1)
-                gosub do_install
-            else
-                print "Error: You have to provide the JAR filename after install keyword!"
-                release
-            break
-        fi
-    fi
-else
-    rem "just called w/o parameters - install all jars found in autoinstall"
-    autopath$ = BBjAPI().getFileSystem().resolvePath("DWCJ/autodeploy/",err=*next)
-    if autopath$>""  then
-        ch=unt
-        open (ch)autopath$
-        while 1
-            read record (ch,end=*break)filename$
-            if filename$(1,1)="." or cvs(filename$(len(filename$)-3,4),4)<>".JAR" then continue
-            filename$=autopath$+"/"+filename$
-            gosub do_install
-        wend
-    close (ch)
-    fi
-fi
-
-
-release
+System.out.println("started installer with Classpath name "+str(BBjAPI().getConfig().getCurrentCommandLineObject().getOriginalClasspathName()))                                                                                                                                                                                                                                                                                                                                                 
+call "DWCJ/cli-modules/get_admin.bbj"                                                                                                                                            
+                                                                                                                                                                                 
+if argc>1 then                                                                                                                                                                   
+    for i=1 to argc-1                                                                                                                                                            
+        if argv(i)="install" then                                                                                                                                                
+            if i<argc-1 then                                                                                                                                                     
+                filename$=argv(i+1)                                                                                                                                              
+                gosub do_install                                                                                                                                                 
+            else                                                                                                                                                                 
+                print "Error: You have to provide the JAR filename after install keyword!"                                                                                       
+                release                                                                                                                                                          
+            fi                                                                                                                                                                
+        fi                                                                                                                                                                       
+    next                                                                                                                                                                         
+else                                                                                                                                                                             
+    rem "just called w/o parameters - install all jars found in autoinstall"                                                                                                     
+    autopath$ = BBjAPI().getFileSystem().resolvePath("DWCJ/autodeploy/",err=*next)                                                                                               
+    System.out.println("scanning "+autopath$)                                                                                                                                    
+    if autopath$>""  then                                                                                                                                                        
+        ch=unt                                                                                                                                                                   
+        open (ch)autopath$                                                                                                                                                       
+        while 1                                                                                                                                                                  
+            read record (ch,end=*break)filename$                                                                                                                                 
+            if filename$(1,1)="." or cvs(filename$(len(filename$)-3,4),4)<>".JAR" then continue                                                                                  
+            filename$=autopath$+"/"+filename$                                                                                                                                    
+            System.out.println("installing "+filename$)                                                                                                                          
+            gosub do_install                                                                                                                                                     
+        wend                                                                                                                                                                     
+    close (ch)                                                                                                                                                                   
+    fi                                                                                                                                                                           
+fi                                                                                                                                                                               
+                                                                                                                                                                                 
+                                                                                                                                                                                 
+release     
 
 do_install:
 
@@ -61,4 +64,5 @@ return
 
 errtrap:
 print "Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1)
+System.out.println("Error "+str(err)+" "+errmes(-1)+" on line "+str(tcb(5))+" in "+pgm(-1))
 release
