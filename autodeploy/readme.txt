@@ -1,0 +1,1 @@
+any JAR file that you put in here will be installed when executing the install.bbj program in the cli-modules w/o passing a parameter
