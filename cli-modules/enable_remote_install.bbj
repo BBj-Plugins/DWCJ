@@ -30,7 +30,9 @@ rem ClassName, Mapping, Source, Config(Optional)
 rem http://documentation.basis.com/BASISHelp/WebHelp/gridmethods4/bbjjettycontextconfiguration_addbbjspservlet.htm
 configuration! = contextConfig!.addBBxServlet(mapping$, servletPgm!.getAbsolutePath(), "DwcjInstallServlet", "service")
 configuration!.setClassPath("_dwcj_cli")
-
+if configFilePath! = null() or configFilePath! = "" then
+    configFilePath! = BBjAPI().getFileSystem().resolvePath(System.getProperty("basis.BBjHome"))+"/cfg/config.bbx"
+fi    
 configuration!.setConfigFile(configFilePath!)
 
 serverConfig!.saveConfig()
