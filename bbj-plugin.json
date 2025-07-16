@@ -1,7 +1,7 @@
 {
   "name": "DWCJ Dynamic Web Client for Java",
   "description": "Develop for the DWC in Java",
-  "version": "25.00",
+  "version": "25.02",
   "author": "Stephan Wald",
   "licence": "MIT",
   "bbj_dependency": "25.00",
