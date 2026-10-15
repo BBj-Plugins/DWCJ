@@ -2,9 +2,10 @@
 
 > [!WARNING]
 > This plugin is deprecated and will be removed in a future webforJ release.
-> [BBjShip](https://github.com/BBj-Plugins/webforj-bbjship) replaces it and
-> deploys webforJ apps to BBjServices. See the
-> [BBjShip documentation](https://docs.webforj.com/docs/configuration/bbjship/overview)
+> [BBjShip](https://github.com/BBj-Plugins/webforj-bbjship) replaces it. It deploys
+> webforJ apps to BBjServices and works with the webforJ development tools,
+> including live reload, hotswap and craftforJ. See the
+> [BBjShip documentation](https://docs.webforj.com/docs/configuration/bbjship/existing-projects)
 > to move existing projects.
 
 This Plug-In installs the DWCJ libraries in your BBj environment. Its configuration screen lets 
