@@ -1,5 +1,12 @@
 # DWCJ
 
+> [!WARNING]
+> This plugin is deprecated and will be removed in a future webforJ release.
+> [BBjShip](https://github.com/BBj-Plugins/webforj-bbjship) replaces it and
+> deploys webforJ apps to BBjServices. See the
+> [BBjShip documentation](https://docs.webforj.com/docs/configuration/bbjship/overview)
+> to move existing projects.
+
 This Plug-In installs the DWCJ libraries in your BBj environment. Its configuration screen lets 
 you then add .jar files (or point to subfolders with binary .class files if you're still developing) that contain 
 implementations of the [org.dwcj.App](https://dwcjava.github.io/engine/org/dwcj/App.html) abstract class.  
