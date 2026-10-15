@@ -1,6 +1,6 @@
 {
   "name": "DWCJ Dynamic Web Client for Java",
-  "description": "Develop for the DWC in Java",
+  "description": "Deprecated. BBjShip (BBj-Plugins/webforj-bbjship) replaces this plugin for webforJ apps.",
   "version": "25.02",
   "author": "Stephan Wald",
   "licence": "MIT",
